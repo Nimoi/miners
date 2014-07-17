@@ -29,6 +29,7 @@ game = {
 		// Init entities
 		game.ent.miner.init();
 		game.initTrees();
+		game.clouds.init();
 
 		// Start main loop
 		setInterval(game.loop, 1000/game.FPS);
@@ -40,6 +41,7 @@ game = {
 		game.clearCanvas();
 		game.world.draw();
 		game.drawTrees();
+		game.clouds.draw();
 
 		game.ent.miner.draw();
 	}
@@ -204,6 +206,40 @@ game.drawTrees = function() {
 		ctx.fill();
 	}
 };
+game.clouds = {
+	init: function() {
+		this.arr = [];
+	    for (i=0; i<=20; i++) {
+	      // Get random positions for trees
+	      var cx = ~~(Math.random() * (canvas.width - 22));
+	      // var cy = ~~(Math.random() * canvas.height);
+	      var cy = Math.floor(Math.random() * 6);
+
+	      size = Math.floor(Math.random() * 2)+1;
+	      speed = Math.random()*0.25;
+	      this.arr.push([cx, cy, size, speed]);
+	    }
+	},
+	draw: function() {
+		for (i=0; i < this.arr.length; i++) {
+			var x = this.arr[i][0],
+			y = this.arr[i][1],
+			size = 20,
+			speed = this.arr[i][3];
+
+			this.arr[i][0] += speed;
+			if(this.arr[i][0] > (canvas.width+size)) {
+				this.arr[i][0] = -size;
+			}
+			// Draw the given cloud
+			ctx.fillStyle = "rgba(255,255,255,0.5)";
+			ctx.beginPath();
+			ctx.arc(x, y, 20, 0, Math.PI * 2, true);
+			ctx.closePath();
+			ctx.fill();
+		}
+	}
+}
 
 /*
  * Stats
