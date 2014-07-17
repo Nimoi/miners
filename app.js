@@ -6,7 +6,6 @@ window.onload = function() {
  * Game init
  */
 game = {
-	trees: [],
 	FPS:30,
 	init: function() {
 		// Init canvas
@@ -159,6 +158,7 @@ game.clearCanvas = function() {
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 };
 game.initTrees = function() {
+	game.trees = [];
     for (i=0; i<=80; i++) {
       // Get random positions for trees
       var treex = ~~(Math.random() * (canvas.width - 22));
