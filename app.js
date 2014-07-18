@@ -97,7 +97,10 @@ game.world = {
 					case 5: // Broken Stone 2
 						ctx.fillStyle = "rgba(43,58,66,1)";
 						break;
-					default: // Grass
+					case 6: // Dark dirt
+						ctx.fillStyle = "rgba(53,49,41,1)";
+						break;
+					default: // Dark dirt
 						ctx.fillStyle = "rgba(53,49,41,1)";
 				}
 				ctx.lineWidth = 1;
@@ -166,6 +169,8 @@ game.ent = {
 		mine: function(tile) {
 			if(tile >= 3 && tile <= 5) {
 				game.world.map[this.target[0]][this.target[1]] += 1;
+			} else if(tile == 1) {
+				game.world.map[this.target[0]][this.target[1]] = 6;
 			}
 		},
 		draw: function() {
