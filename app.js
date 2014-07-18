@@ -22,6 +22,20 @@ game = {
 			//
 		});
 		canvas.addEventListener('click', game.mouseClick, false);
+		// Pause
+		var btnPlay = document.getElementsByClassName('pause');
+		game.pause = {};
+		game.pause.active = 0;
+		btnPlay[0].addEventListener('click', function() {
+			if(!game.pause.active) {
+				game.pause.active = 1;
+				btnPlay[0].innerHTML = "Play";
+			} else {
+				game.pause.active = 0;
+				btnPlay[0].innerHTML = "Pause";
+			}
+			return false;
+		}, false);
 
 		// Create world
 		game.world.create();
@@ -35,16 +49,18 @@ game = {
 		setInterval(game.loop, 1000/game.FPS);
 	},
 	loop: function() {
-		//Update
-		game.ent.miner.update();
-		//Draw
-		// Need to determine when a redraw is necessary.
-		game.clearCanvas();
-		game.world.draw();
-		game.drawTrees();
-		game.clouds.draw();
+		if(!game.pause.active) {
+			//Update
+			game.ent.miner.update();
+			//Draw
+			// Need to determine when a redraw is necessary.
+			game.clearCanvas();
+			game.world.draw();
+			game.drawTrees();
+			game.clouds.draw();
 
-		game.ent.miner.draw();
+			game.ent.miner.draw();
+		}
 	}
 }
 
@@ -59,21 +75,23 @@ game.world = {
 		console.log('Creating world...');
 		for (x = 0; x < this.width; x++) {
 			this.map[x] = [];
-			for (y = 0; y < this.height; y++) {
+			for (y = 0; y < this.width; y++) {
 				if(y < 5) { // Sky
 					this.map[x][y] = 0;
 				} else if(y > 9 ) { // Stone
 					this.map[x][y] = 3;
+				} else if(y > this.height ) {
+					this.map[x][y] = 0;
 				} else { // Grass
 					this.map[x][y] = 1;
 				}
 			}
 		}
-		// Relic
-		relicx = Math.floor(Math.random()*this.width);
-		relicy = Math.floor(Math.random()*(this.height - 24))+24;
-		this.map[relicx][relicy] = 2;
-		console.log([relicx, relicy]);
+		// Tunnel
+		tunx = Math.floor(Math.random()*this.width);
+		tuny = Math.floor(Math.random()*(this.height - 24))+24;
+		this.map[tunx][tuny] = 2;
+		console.log([tunx, tuny]);
 	},
 	draw: function() {
 		for (x = 0; x < this.width; x++) {
@@ -85,7 +103,7 @@ game.world = {
 					case 1: // Grass
 						ctx.fillStyle = "rgba(181,230,85,1)";
 						break;
-					case 2: // Relic
+					case 2: // Tunnel
 						ctx.fillStyle = "rgba(255,128,0,1)";
 						break;
 					case 3: // Solid Stone
@@ -151,17 +169,17 @@ game.ent = {
 			if(this.path.length) {
 				console.log(this.path);
 				if(game.ent.compareCell([this.path[0][0],this.path[0][1]], this.cell)) {
-					if(this.path.length) {
-						this.path.splice(0,1);
-					}
+					this.path.splice(0,1);
 				}
-			}
-			if(this.target) {
+			} else if(this.target) {
 				if(game.ent.compareCell(this.target, this.cell)) {
 					var tile = game.world.map[this.target[0]][this.target[1]];
 					this.mine(tile);
-					this.target = 0;
-				} else {
+				}
+				this.target = 0;
+			}
+			if(this.target) {
+				if(!game.ent.compareCell(this.target, this.cell)) {
 					game.ent.moveTarget(this);
 				}
 			}
