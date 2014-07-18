@@ -175,7 +175,6 @@ game.ent = {
 		update: function() {
 			this.cell = game.world.getCell(this.pos.x, this.pos.y, 10);
 			if(this.path.length) {
-				console.log(this.path);
 				if(game.ent.compareCell([this.path[0][0],this.path[0][1]], this.cell)) {
 					this.path.splice(0,1);
 				}
@@ -184,8 +183,7 @@ game.ent = {
 					var tile = game.world.map[this.target[0]][this.target[1]];
 					this.mine(tile);
 				} else {
-					this.selected.target = this.target;
-					this.selected.valid = 0;
+					console.log("Target invalid");
 				}
 				this.target = 0;
 			}
@@ -282,12 +280,11 @@ game.mouseClick = function(e) {
 	console.log('clicked tile '+cell[0]+','+cell[1]);
 
 	if(path.length) {
-		console.log(path);
-		// console.log(game.ent.miner.target);
 		game.ent.miner.path = path;
-		game.ent.miner.selected.valid = "green";
+		game.ent.miner.selected.valid = 1;
 	} else {
 		game.ent.miner.target = 0;
+		game.ent.miner.selected.valid = 0;
 	}
 }
 
@@ -384,6 +381,7 @@ game.clouds = {
 // pathStart and pathEnd are arrays like [5,10]
 function findPath(pathStart, pathEnd)
 {
+	console.log(pathEnd);
 	// shortcuts for speed
 	var	abs = Math.abs,
 	max = Math.max,
@@ -535,24 +533,27 @@ function findPath(pathStart, pathEnd)
 				if(walkableTiles.contains(world[x][y])) {
 					return true;
 				}
-				if(typeof world[x-1][y] != 'undefined') {
-					if(walkableTiles.contains(world[x-1][y])) {
-						return true;
+				if(x == pathEnd[0] && y == pathEnd[1]) {
+					console.log("LAST BUTT WORKIN");
+					if(typeof world[x-1][y] != 'undefined') {
+						if(walkableTiles.contains(world[x-1][y])) {
+							return true;
+						}
 					}
-				}
-				if(typeof world[x+1][y] != 'undefined') {
-					if(walkableTiles.contains(world[x+1][y])) {
-						return true;
+					if(typeof world[x+1][y] != 'undefined') {
+						if(walkableTiles.contains(world[x+1][y])) {
+							return true;
+						}
 					}
-				}
-				if(typeof world[x][y-1] != 'undefined') {
-					if(walkableTiles.contains(world[x][y-1])) {
-						return true;
+					if(typeof world[x][y-1] != 'undefined') {
+						if(walkableTiles.contains(world[x][y-1])) {
+							return true;
+						}
 					}
-				}
-				if(typeof world[x][y+1] != 'undefined') {
-					if(walkableTiles.contains(world[x][y+1])) {
-						return true;
+					if(typeof world[x][y+1] != 'undefined') {
+						if(walkableTiles.contains(world[x][y+1])) {
+							return true;
+						}
 					}
 				}
 				// switch(true) {
