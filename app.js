@@ -118,6 +118,9 @@ game.world = {
 					case 6: // Dark dirt
 						ctx.fillStyle = "rgba(53,49,41,1)";
 						break;
+					case 7: // Light dirt
+						ctx.fillStyle = "rgba(112,91,53,1)";
+						break;
 					default: // Dark dirt
 						ctx.fillStyle = "rgba(53,49,41,1)";
 				}
@@ -188,7 +191,7 @@ game.ent = {
 			if(tile >= 3 && tile <= 5) {
 				game.world.map[this.target[0]][this.target[1]] += 1;
 			} else if(tile == 1) {
-				game.world.map[this.target[0]][this.target[1]] = 6;
+				game.world.map[this.target[0]][this.target[1]] = 7;
 			}
 		},
 		draw: function() {
@@ -361,12 +364,11 @@ function findPath(pathStart, pathEnd)
 	sqrt = Math.sqrt,
 	world = game.world.map;
 
-
 	// the world data are integers:
 	// anything higher than this number is considered blocked
 	// this is handy is you use numbered sprites, more than one
 	// of which is walkable road, grass, mud, etc
-	var walkableTiles = [1, 4, 5];
+	var walkableTiles = [1, 4, 5, 6, 7];
 
 	// keep track of the world dimensions
     // Note that this A-star implementation expects the world array to be square: 
@@ -503,25 +505,40 @@ function findPath(pathStart, pathEnd)
 	{
 		if(world[x] != null) {
 			if(world[x][y] != null) {
-				// if(walkableTiles.contains(world[x][y])) {
-				// 	return true;
-				// }
-				// if(typeof world[y-2][y] != 'undefined') {
-				// 	if(walkableTiles.contains(world[y-1][y])) {
-				// 		return true;
-				// 	}
-				// }
-				switch(true) {
-					case walkableTiles.contains(world[x][y]):
-					case walkableTiles.contains(world[x-1][y]):
-					case walkableTiles.contains(world[x+1][y]):
-					case walkableTiles.contains(world[x][y-1]):
-					case walkableTiles.contains(world[x][y+1]):
-						return true;
-						break;
-					default:
-					return false;
+				if(walkableTiles.contains(world[x][y])) {
+					return true;
 				}
+				if(typeof world[x-1][y] != 'undefined') {
+					if(walkableTiles.contains(world[x-1][y])) {
+						return true;
+					}
+				}
+				if(typeof world[x+1][y] != 'undefined') {
+					if(walkableTiles.contains(world[x+1][y])) {
+						return true;
+					}
+				}
+				if(typeof world[x][y-1] != 'undefined') {
+					if(walkableTiles.contains(world[x][y-1])) {
+						return true;
+					}
+				}
+				if(typeof world[x][y+1] != 'undefined') {
+					if(walkableTiles.contains(world[x][y+1])) {
+						return true;
+					}
+				}
+				// switch(true) {
+				// 	case walkableTiles.contains(world[x][y]):
+				// 	case walkableTiles.contains(world[x-1][y]):
+				// 	case walkableTiles.contains(world[x+1][y]):
+				// 	case walkableTiles.contains(world[x][y-1]):
+				// 	case walkableTiles.contains(world[x][y+1]):
+				// 		return true;
+				// 		break;
+				// 	default:
+				// 	return false;
+				// }
 			}
 		}
 		return false;
