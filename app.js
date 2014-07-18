@@ -36,6 +36,7 @@ game = {
 	},
 	loop: function() {
 		//Update
+		game.ent.miner.update();
 		//Draw
 		// Need to determine when a redraw is necessary.
 		game.clearCanvas();
@@ -61,6 +62,8 @@ game.world = {
 			for (y = 0; y < this.height; y++) {
 				if(y < 5) { // Sky
 					this.map[x][y] = 0;
+				} else if(y > 9 ) { // Stone
+					this.map[x][y] = 3;
 				} else { // Grass
 					this.map[x][y] = 1;
 				}
@@ -68,7 +71,7 @@ game.world = {
 		}
 		// Relic
 		relicx = Math.floor(Math.random()*this.width);
-		relicy = Math.floor(Math.random()*this.height);
+		relicy = Math.floor(Math.random()*(this.height - 24))+24;
 		this.map[relicx][relicy] = 2;
 		console.log([relicx, relicy]);
 	},
@@ -76,25 +79,48 @@ game.world = {
 		for (x = 0; x < this.width; x++) {
 			for (y = 0; y < this.height; y++) {
 				switch(this.map[x][y]) {
-					case 0:
+					case 0: // Sky
 						ctx.fillStyle = "rgba(104,164,204,1)";
 						break;
-					case 1:
+					case 1: // Grass
 						ctx.fillStyle = "rgba(181,230,85,1)";
 						break;
-					case 2:
+					case 2: // Relic
 						ctx.fillStyle = "rgba(255,128,0,1)";
 						break;
-					default:
-						ctx.fillStyle = "rgba(181,230,85,1)";
+					case 3: // Solid Stone
+						ctx.fillStyle = "rgba(145,163,171,1)";
+						break;
+					case 4: // Broken Stone 1
+						ctx.fillStyle = "rgba(63,87,101,1)";
+						break;
+					case 5: // Broken Stone 2
+						ctx.fillStyle = "rgba(43,58,66,1)";
+						break;
+					default: // Grass
+						ctx.fillStyle = "rgba(53,49,41,1)";
 				}
-				ctx.fillRect(x*game.tile.width,
-					y*game.tile.height,
-					game.tile.width,
-					game.tile.height);
-				// console.log(y*game.tile.height);
+				ctx.lineWidth = 1;
+				ctx.strokeStyle = "#fff";
+
+				ctx.beginPath();
+					ctx.rect(x*game.tile.width,
+						y*game.tile.height,
+						game.tile.width,
+						game.tile.height);
+				// ctx.stroke();
+				ctx.fill();
+				ctx.closePath();
 			}
 		}
+	},
+	getCell: function(x,y,size) {
+		if(size) {
+			x += size/2;
+			y += size/2;
+		}
+		return [Math.floor(x/game.tile.width),
+		Math.floor(y/game.tile.height)];
 	}
 };
 
@@ -112,9 +138,20 @@ game.ent = {
 		init: function() {
 			this.pos.x = canvas.width/2;
 			this.pos.y = game.tile.height*7;
+			this.cell = game.world.getCell(this.pos.x, this.pos.y);
+			this.speed = 1;
+			this.target = 0;
 		},
 		update: function() {
-			
+			this.cell = game.world.getCell(this.pos.x, this.pos.y, 10);
+			if(this.target) {
+				if(game.ent.compareCell(this.target, this.cell)) {
+					game.world.map[this.target[0]][this.target[1]] += 1;
+					this.target = 0;
+				} else {
+					game.ent.moveTarget(this);
+				}
+			}
 		},
 		draw: function() {
 			var size = 10;
@@ -122,6 +159,24 @@ game.ent = {
 			ctx.fillRect(this.pos.x, this.pos.y, size, size);
 		},
 	},
+	moveTarget: function(unit) {
+		// Get coords for center of target
+		var tx = unit.target[0]*game.tile.width;
+		var ty = unit.target[1]*game.tile.height;
+		// Rotate us to face the target
+	    var rotation = Math.atan2(ty - unit.pos.y, tx - unit.pos.x);
+	    // Move towards the target
+	    unit.pos.x += Math.cos(rotation) * unit.speed;
+	    unit.pos.y += Math.sin(rotation) * unit.speed;
+	},
+	compareCell: function(cell1, cell2) {
+		if(cell1[0] == cell2[0]) {
+			if(cell1[1] == cell2[1]) {
+				return true;
+			}
+		}
+		return false;
+	}
 };
 
 /*
@@ -145,11 +200,12 @@ game.mouseClick = function(e) {
 	y -= canvas.offsetTop;
 
 	// return tile x,y that we clicked
-	var cell = 
-		[Math.floor(x/game.tile.width),
-		Math.floor(y/game.tile.height)];
+	var cell = game.world.getCell(x, y);
 
 	console.log('clicked tile '+cell[0]+','+cell[1]);
+
+	game.ent.miner.target = [cell[0],cell[1]];
+	console.log(game.ent.miner.target);
 }
 
 /*
@@ -213,7 +269,7 @@ game.clouds = {
 	      // Get random positions for trees
 	      var cx = ~~(Math.random() * (canvas.width - 22));
 	      // var cy = ~~(Math.random() * canvas.height);
-	      var cy = Math.floor(Math.random() * 6);
+	      var cy = Math.floor(Math.random() * 2);
 
 	      size = Math.floor(Math.random() * 2)+1;
 	      speed = Math.random()*0.25;
