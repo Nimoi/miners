@@ -60,6 +60,11 @@ game = {
 			game.clouds.draw();
 
 			game.ent.miner.draw();
+
+			// UI
+			if(game.ent.miner.selected.target) {
+				game.ent.miner.selected.draw();
+			}
 		}
 	}
 }
@@ -178,12 +183,17 @@ game.ent = {
 				if(game.ent.compareCell(this.target, this.cell)) {
 					var tile = game.world.map[this.target[0]][this.target[1]];
 					this.mine(tile);
+				} else {
+					this.selected.target = this.target;
+					this.selected.valid = 0;
 				}
 				this.target = 0;
 			}
 			if(this.target) {
 				if(!game.ent.compareCell(this.target, this.cell)) {
 					game.ent.moveTarget(this);
+				} else {
+					this.selected.target = 0;
 				}
 			}
 		},
@@ -198,6 +208,20 @@ game.ent = {
 			var size = 10;
 			ctx.fillStyle = "rgba(0,0,0,1)";
 			ctx.fillRect(this.pos.x, this.pos.y, size, size);
+		},
+		selected: {
+			target: 0,
+			valid: 0,
+			draw: function() {
+				var x = this.target[0]*game.tile.width,
+				y = this.target[1]*game.tile.height;
+				if(this.valid) {
+					ctx.strokeStyle = "#0084ff";
+				} else {
+					ctx.strokeStyle = "red";
+				}
+				ctx.strokeRect(x, y, game.tile.width, game.tile.height);
+			}
 		},
 	},
 	moveTarget: function(unit) {
@@ -217,6 +241,7 @@ game.ent = {
 	    // Move towards the target
 	    unit.pos.x += Math.cos(rotation) * unit.speed;
 	    unit.pos.y += Math.sin(rotation) * unit.speed;
+	    unit.pos.y += 0.5;
 	},
 	compareCell: function(cell1, cell2) {
 		if(cell1[0] == cell2[0]) {
@@ -252,6 +277,7 @@ game.mouseClick = function(e) {
 	var cell = game.world.getCell(x, y);
 	game.ent.miner.target = [cell[0],cell[1]];
 	var path = findPath(game.ent.miner.cell, game.ent.miner.target);
+	game.ent.miner.selected.target = [cell[0],cell[1]];
 
 	console.log('clicked tile '+cell[0]+','+cell[1]);
 
@@ -259,6 +285,7 @@ game.mouseClick = function(e) {
 		console.log(path);
 		// console.log(game.ent.miner.target);
 		game.ent.miner.path = path;
+		game.ent.miner.selected.valid = "green";
 	} else {
 		game.ent.miner.target = 0;
 	}
